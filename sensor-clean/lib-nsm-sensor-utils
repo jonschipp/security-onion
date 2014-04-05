@@ -264,7 +264,7 @@ sensortab_port_find_available()
 #
 # sensor_cleandisk()
 #
-# Recurslively removes the oldest log files until the disk status fall below
+# Recursively removes the oldest log files until the disk status fall below
 # the specified critical usage level. There are two usage levels to be
 # specified - warning and critical.
 #
@@ -275,7 +275,8 @@ sensortab_port_find_available()
 #   - log_dir (string)			full path of log directory
 #   - utc (string)				enable UTC timestamps
 #   - warning level (integer)	percentage value of warning (eg. 80)
-#   - critical level (ineger)	percentage value of critical (eg. 90)
+#   - critical level (integer)	percentage value of critical (eg. 90)
+#   - skip removal		skip removal of ARGUS or BRO logs, arguments: (BOTH, NONE, BRO, ARGUS)
 #
 # Returns:
 #   Zero (0) is returned on success with a non-zero (1) returned on any error.
@@ -287,6 +288,7 @@ sensor_cleandisk()
 	UTC=${2:N}
 	WARN_DISK_USAGE=${3:-80}
 	CRIT_DISK_USAGE=${4:-90}
+	SKIP_REMOVAL=${5:-NONE}
 	#echo $LOG_DIR
 	cd $LOG_DIR/..
 	SENSOR_DIR=`pwd`
@@ -321,17 +323,21 @@ sensor_cleandisk()
 		# - there are no more files/dirs to delete (REMOVED=no even at the end)
 		# - disk is under $CRIT_DISK_USAGE
 		REMOVED="no"
-
-		# find the oldest Bro logs directory and exclude today
-                OLDEST_DIR=$(ls /nsm/bro/logs/ | grep -v "current" | grep -v "stats" | sort | grep -v $TODAY | head -n 1)
-                if [ -z "$OLDEST_DIR" -o "$OLDEST_DIR" == ".." -o "$OLDEST_DIR" == "." ]
-                then
-                        echo_msg 1 "${RED}no old Bro logs available to clean up in /nsm/bro/logs/"
-                else
-                        echo_msg 1 "removing directory: /nsm/bro/logs/$OLDEST_DIR"
-                        rm -rf /nsm/bro/logs/"$OLDEST_DIR"
-                        REMOVED="yes"
-                fi
+	
+		if [ "$SKIP_REMOVAL" == "NONE" ] || [ "$SKIP_REMOVAL" == "ARGUS" ]
+		then	
+			# find the oldest Bro logs directory and exclude today
+                	OLDEST_DIR=$(ls /nsm/bro/logs/ | grep -v "current" | grep -v "stats" \
+					| sort | grep -v $TODAY | head -n 1)
+                	if [ -z "$OLDEST_DIR" -o "$OLDEST_DIR" == ".." -o "$OLDEST_DIR" == "." ]
+                	then
+	                        echo_msg 1 "${RED}no old Bro logs available to clean up in /nsm/bro/logs/"
+                	else
+                        	echo_msg 1 "removing directory: /nsm/bro/logs/$OLDEST_DIR"
+                        	rm -rf /nsm/bro/logs/"$OLDEST_DIR"
+                        	REMOVED="yes"
+                	fi
+		fi
 
 		# find the oldest extracted files in /nsm/bro/extracted/ and exclude today
 		# NOTE: --time-style="long-iso" must be used so that the script works properly in a cron job where the locale is not set
@@ -364,15 +370,19 @@ sensor_cleandisk()
 				rm -rf "$SENSOR"/dailylogs/"$OLDEST_DIR"
 				REMOVED="yes"
 			fi
-			# find the oldest argus files and exclude today
-			OLDEST_ARGUS=$(ls $SENSOR/argus | sort | grep -v $TODAY | head -n 1)
-			if [ -z "$OLDEST_ARGUS" -o "$OLDEST_ARGUS" == ".." -o "$OLDEST_ARGUS" == "." ]
+
+			if [ "$SKIP_REMOVAL" == "NONE" ] || [ "$SKIP_REMOVAL" == "$BRO" ]
 			then
-				echo_msg 1 "${RED}no old argus files available to clean up in $SENSOR/argus/"
-			else
-				echo_msg 1 "removing argus file: $SENSOR/argus/$OLDEST_ARGUS"
-				rm -f "$SENSOR"/argus/"$OLDEST_ARGUS"
-				REMOVED="yes"
+				# find the oldest argus files and exclude today
+				OLDEST_ARGUS=$(ls $SENSOR/argus | sort | grep -v $TODAY | head -n 1)
+				if [ -z "$OLDEST_ARGUS" -o "$OLDEST_ARGUS" == ".." -o "$OLDEST_ARGUS" == "." ]
+				then
+					echo_msg 1 "${RED}no old argus files available to clean up in $SENSOR/argus/"
+				else
+					echo_msg 1 "removing argus file: $SENSOR/argus/$OLDEST_ARGUS"
+					rm -f "$SENSOR"/argus/"$OLDEST_ARGUS"
+					REMOVED="yes"
+				fi
 			fi
 			# find the oldest SURICATA unified2 files in $SENSOR/ and exclude today
 			# NOTE: --time-style="long-iso" must be used so that the script works properly in a cron job where the locale is not set
@@ -416,7 +426,7 @@ sensor_cleandisk()
 			# but we wait 3 secs and hope any open writes are done.
 			sync 
 			sleep 3
-			sensor_cleandisk $LOG_DIR $UTC $WARN_DISK_USAGE $CRIT_DISK_USAGE
+			sensor_cleandisk $LOG_DIR $UTC $WARN_DISK_USAGE $CRIT_DISK_USAGE $SKIP_REMOVAL
 		fi
 	# simple warning (no action taken) of increased disk usage
 	elif [ "$CUR_USAGE" -gt "$WARN_DISK_USAGE" ]
