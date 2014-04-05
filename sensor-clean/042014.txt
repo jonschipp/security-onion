@@ -1,0 +1,2 @@
+Add option to sensor-clean script to skip removal of
+logs for Bro or Argus or both.
