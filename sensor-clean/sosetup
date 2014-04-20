@@ -120,6 +120,8 @@ BRO_LB_PROCS_CONFIRM="- Run a single Bro process per interface.\n"
 # /etc/nsm/securityonion.conf services enabled by default
 BRO_ENABLED="yes"
 OSSEC_AGENT_ENABLED="yes"
+# /etc/nsm/securityonion.conf: Skip removal of data on sensor-clean (BRO/ARGUS/BOTH/NONE)
+SKIP_REMOVAL="NONE"
 # /etc/nsm/HOSTNAME-INTERFACE/sensor.conf services enabled by default
 PCAP_ENABLED="yes"
 PCAP_AGENT_ENABLED="yes"
@@ -1289,6 +1291,7 @@ echo "CRIT_DISK_USAGE=$CRIT_DISK_USAGE" 		>> $CONF
 echo "BRO_ENABLED=$BRO_ENABLED" 			>> $CONF
 echo "OSSEC_AGENT_ENABLED=$OSSEC_AGENT_ENABLED" 	>> $CONF
 echo "LOCAL_HIDS_RULE_TUNING=false"			>> $CONF
+echo "SKIP_REMOVAL=NONE"				>> $CONF
 
 #########################################
 # Download rules using Pulledpork
