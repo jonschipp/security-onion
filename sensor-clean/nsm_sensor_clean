@@ -40,9 +40,9 @@ INC="/etc/nsm/administration.conf"
 #
 print_usage()
 {
-	echo 
+	echo
 	echo "The NSMnow Administration scripts come with ABSOLUTELY NO WARRANTY."
-	echo 
+	echo
 	echo "Usage: $0 [options]"
 	echo
 	echo "Options:"
@@ -54,7 +54,7 @@ print_usage()
 	echo "    -B         Skip removal ARGUS and Bro logs"
 	echo "    -N         Do not skip (default)"
 	echo "    -?         Show usage information"
-	echo 
+	echo
 	echo "Long Options:"
 	echo
 	echo "    --dialog              Same as -d"
@@ -66,7 +66,7 @@ print_usage()
 	echo "    --skip-both           Same as -B"
 	echo "    --skip-none           Same as -N"
 	echo "    --help                Same as -?"
-	echo 
+	echo
 }
 
 # script specific variables
@@ -94,7 +94,7 @@ do
 			SHOW_VERSION_ONLY=yes
 			;;
 		"-B" | "--skip-both")
-			SKIP_REMOVAL=ARGUS
+			SKIP_REMOVAL=BOTH
 			;;
 		"-b" | "--skip-bro")
 			SKIP_REMOVAL=BRO
@@ -136,7 +136,7 @@ then
 	echo_error_msg 0 "OOPS: Must be root to run this script!"
 	exit 1;
 fi
-	
+
 #
 # COLLECT INPUT
 #
@@ -181,7 +181,8 @@ echo_msg 0 "Cleaning sensors"
 
 # You can override these defaults by setting these variables in /etc/nsm/securityonion.conf
 WARN_DISK_USAGE=80
-CRIT_DISK_USAGE=90 
+CRIT_DISK_USAGE=90
+SKIP_REMOVAL=NONE
 CONF="/etc/nsm/securityonion.conf"
 
 if [ -f $CONF ]; then
@@ -190,6 +191,7 @@ if [ -f $CONF ]; then
 	# If $CONF doesn't have these variables, add them
 	grep WARN_DISK_USAGE $CONF >/dev/null || echo "WARN_DISK_USAGE=80" >> $CONF
 	grep CRIT_DISK_USAGE $CONF >/dev/null || echo "CRIT_DISK_USAGE=90" >> $CONF
+	grep SKIP_REMOVAL    $CONF >/dev/null || echo "SKIP_REMOVAL=NONE"  >> $CONF
 fi
 
 # clean the files as appropriate

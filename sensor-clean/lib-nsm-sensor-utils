@@ -68,7 +68,7 @@ sensortab_entry_add()
 	then
 		# grab the sensortab
 		SENSORTAB=$(cat "/etc/nsm/sensortab" | grep -v "^#" | awk '{print $1}')
-	
+
 		# loop through non commented entries to check for duplicate entry
 		for SENSOR in $SENSORTAB
 		do
@@ -101,9 +101,9 @@ sensortab_entry_del()
 	# sanity checks
 	[ -z "$DEL_NAME" ] && return 1
 	[ -f "/etc/nsm/sensortab" ] || return 1
-	
+
 	sed -i "/^$DEL_NAME[ \t]/D" /etc/nsm/sensortab
-	
+
 	return $?
 }
 
@@ -125,7 +125,7 @@ sensortab_names_get()
 	SENSORTAB_NAMES=""
 
 	[ -f "/etc/nsm/sensortab" ] || return 1
-	
+
 	# grab the sensortab
 	SENSORTAB=$(cat "/etc/nsm/sensortab" | grep -v "^#" | awk '{print $1}')
 
@@ -162,7 +162,7 @@ sensortab_names_get_on_auto()
 	AUTO_STATE=${1:-1}
 
 	[ -f "/etc/nsm/sensortab" ] || return 1
-	
+
 	# grab the sensortab
 	echo "\$2==\"$AUTO_STATE\" {print \$1}" >/tmp/awk.conf
 	SENSORTAB=$(cat "/etc/nsm/sensortab" | grep -v "^#" | awk -f /tmp/awk.conf)
@@ -198,7 +198,7 @@ sensortab_names_get_on_port()
 	SENSORTAB_NAMES=""
 
 	[ -f "/etc/nsm/sensortab" ] || return 1
-	
+
 	# grab the sensortab
 	echo "\$3==\"$PORT\" {print \$1}" >/tmp/awk.conf
 	SENSORTAB=$(cat "/etc/nsm/sensortab" | grep -v "^#" | awk -f /tmp/awk.conf)
@@ -251,7 +251,7 @@ sensortab_port_find_available()
 		then
 			echo $PORT
 			return 0
-		fi	
+		fi
 	done
 
 	return 1
@@ -281,7 +281,7 @@ sensortab_port_find_available()
 # Returns:
 #   Zero (0) is returned on success with a non-zero (1) returned on any error.
 #
-sensor_cleandisk() 
+sensor_cleandisk()
 {
 	# grab input variables with sane defaulting
 	LOG_DIR=${1:-}
@@ -296,7 +296,7 @@ sensor_cleandisk()
 	#echo $SENSOR_DIR
 	CUR_USAGE=$(df -P $SENSOR_DIR | grep -v -i filesystem | awk '{print $5}' | tr -d %)
 	#echo $CUR_USAGE
-  
+
 	# let's change color based on severity
 	if [ "$CUR_USAGE" -gt "$CRIT_DISK_USAGE" ]; then
 		USE_COL=${RED}
@@ -307,7 +307,7 @@ sensor_cleandisk()
 	fi
 
 	echo_msg 1 "disk space currently at ${USE_COL}${CUR_USAGE}%"
-	
+
 	if [ "$CUR_USAGE" -gt "$CRIT_DISK_USAGE" ]
 	then
 		# grab time in GMT
@@ -317,15 +317,15 @@ sensor_cleandisk()
 		else
 			TODAY=$(date "+%Y-%m-%d")
 		fi
-		
+
 		# Initialize REMOVED to "no".
 		# We recursively run this job until one of the following conditions exist:
 		# - there are no more files/dirs to delete (REMOVED=no even at the end)
 		# - disk is under $CRIT_DISK_USAGE
 		REMOVED="no"
-	
+
 		if [ "$SKIP_REMOVAL" == "NONE" ] || [ "$SKIP_REMOVAL" == "ARGUS" ]
-		then	
+		then
 			# find the oldest Bro logs directory and exclude today
                 	OLDEST_DIR=$(ls /nsm/bro/logs/ | grep -v "current" | grep -v "stats" \
 					| sort | grep -v $TODAY | head -n 1)
@@ -371,7 +371,7 @@ sensor_cleandisk()
 				REMOVED="yes"
 			fi
 
-			if [ "$SKIP_REMOVAL" == "NONE" ] || [ "$SKIP_REMOVAL" == "$BRO" ]
+			if [ "$SKIP_REMOVAL" == "NONE" ] || [ "$SKIP_REMOVAL" == "BRO" ]
 			then
 				# find the oldest argus files and exclude today
 				OLDEST_ARGUS=$(ls $SENSOR/argus | sort | grep -v $TODAY | head -n 1)
@@ -424,7 +424,7 @@ sensor_cleandisk()
 		then
 			# run cleandisk again as rm'ing one file might been enough
 			# but we wait 3 secs and hope any open writes are done.
-			sync 
+			sync
 			sleep 3
 			sensor_cleandisk $LOG_DIR $UTC $WARN_DISK_USAGE $CRIT_DISK_USAGE $SKIP_REMOVAL
 		fi
@@ -454,7 +454,7 @@ sensor_stat_cronjob()
 
 	# check if cronjob set to restart each day
 	if [ ! -f $CRONJOB ]
-	then 
+	then
 		echo_warning_msg 1 "no cronjob found for daily restarts"
 		return 1
 	fi
