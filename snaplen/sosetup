@@ -62,7 +62,7 @@
 # 20120508 - Fix the following issues:
 # Issue 239: autossh should use OpenSSH ServerAliveInterval and ServerAliveCountMax options
 # http://code.google.com/p/security-onion/issues/detail?id=239
-# 
+#
 # 20120910 - Numerous fixes for BDR
 # 20121116 - /etc/network/interfaces configuration by Matt Gregory
 
@@ -104,6 +104,7 @@ PCAP_SIZE=150
 # PCAP_RING_SIZE is the RX_RING size for buffering packets
 # Default is 64MB
 PCAP_RING_SIZE="64"
+PCAP_SNAP_LENGTH="65535"
 # WARN_DISK_USAGE is the percentage of disk usage at which the NSM scripts warn the disk is getting full
 WARN_DISK_USAGE=80
 # CRIT_DISK_USAGE is the percentage of disk usage at which the NSM scripts begin purging old files
@@ -230,7 +231,7 @@ if [ $ADVANCED_SETUP -eq 0 ]; then
                 INTERFACES=`cat "/proc/net/dev" | egrep "(eth|bond|wlan|br|ath|bge|mon|fe)[0-9]+" | awk '{print $1}' | cut -d\: -f1 | sort`
                 if grep "Security Onion" /etc/network/interfaces >/dev/null 2>&1 && grep manual /etc/network/interfaces >/dev/null 2>&1; then
                         CONFIGURED_INTERFACES=`awk '/manual/ {print $2}' /etc/network/interfaces | head -1`
-                        INPUT=`for i in $INTERFACES; do 
+                        INPUT=`for i in $INTERFACES; do
                                         if echo $CONFIGURED_INTERFACES |grep $i >/dev/null 2>&1; then
                                                 echo -n "TRUE $i "
                                         else
@@ -299,7 +300,7 @@ firewall rules."
 		SSH_USERNAME=`zenity --title="$TITLE" --text="$TEXT" --entry`
 		[ x$SSH_USERNAME = "x" ] && exit
 		SENSOR_CONFIRM_3="- Configure the sensors to report to $SERVERNAME.\n"
-		;;	
+		;;
 	*)
                 [ $DEBUG -eq 1 ] && echo "DEBUG: Clicked Cancel.  Exiting."
                 exit
@@ -334,7 +335,7 @@ Please use alphanumeric characters only."
 		TEXT="What is your email address?\r\rThis will be used when logging into Snorby."
 		SNORBY_EMAIL=`zenity --title="$TITLE" --text="$TEXT" --entry`
 		[ x$SNORBY_EMAIL = "x" ] && exit
-		if [[ "$SNORBY_EMAIL" != *?"@"?*.?* ]] ; then 
+		if [[ "$SNORBY_EMAIL" != *?"@"?*.?* ]] ; then
 			zenity --error --text="Invalid email address\! \r \
 \r \
 Please ensure your email address is of the form: \r \
@@ -386,27 +387,27 @@ fi
 #########################################
 if [ $ADVANCED_SETUP -eq 1 ] && [ $SERVER -eq 1 ]; then
 
-	# Ask for DAYSTOKEEP        
+	# Ask for DAYSTOKEEP
 	DAYSTOKEEP_CONFIRMED="no"
 	while [ $DAYSTOKEEP_CONFIRMED = "no" ]; do
 		DAYSTOKEEP=`zenity --entry --title "$TITLE" --text="How many days of data do you want to keep in your Sguil database?\n\nThis includes things like IDS alerts, PADS events, and PRADS session data.\n\nIf you need to change this later, you can change DAYSTOKEEP in /etc/nsm/securityonion.conf.\n\nPlease enter an integer.  The default is 30 days." --entry-text=30`
 		[ x$DAYSTOKEEP = "x" ] && exit
 		COMPRESSED="$(echo $DAYSTOKEEP | sed -e 's/[^[:digit:]]//g')"
 		if [ "$COMPRESSED" != "$DAYSTOKEEP" ]; then
-			zenity --error --text "Invalid value! Please use integers only." 
+			zenity --error --text "Invalid value! Please use integers only."
 		else
 			DAYSTOKEEP_CONFIRMED="yes"
 		fi
 	done
 
-	# Ask for DAYSTOREPAIR        
+	# Ask for DAYSTOREPAIR
 	DAYSTOREPAIR_CONFIRMED="no"
 	while [ $DAYSTOREPAIR_CONFIRMED = "no" ]; do
 		DAYSTOREPAIR=`zenity --entry --title "$TITLE" --text="How many days of data do you want to repair in your Sguil database?\n\nA daily cronjob stops Sguil, repairs the MySQL tables for the last X days, and then starts Sguil back up.\n\nIf you choose a higher value, Sguil will be down for longer.\n\nIf you need to change this later, you can change DAYSTOREPAIR in /etc/nsm/securityonion.conf.\n\nPlease enter an integer.  The default is 7 days." --entry-text=7`
 		[ x$DAYSTOREPAIR = "x" ] && exit
 		COMPRESSED="$(echo $DAYSTOREPAIR | sed -e 's/[^[:digit:]]//g')"
 		if [ "$COMPRESSED" != "$DAYSTOREPAIR" ]; then
-			zenity --error --text "Invalid value! Please use integers only." 
+			zenity --error --text "Invalid value! Please use integers only."
 		else
 			DAYSTOREPAIR_CONFIRMED="yes"
 		fi
@@ -415,7 +416,7 @@ if [ $ADVANCED_SETUP -eq 1 ] && [ $SERVER -eq 1 ]; then
 	# Ask which IDS engine to use.
 	TEXT="Which IDS Engine would you like to use?"
 	IDS_ENGINE=`zenity --list --radiolist --column="1" --column="2" --hide-header --title="$TITLE" --text="$TEXT" FALSE Snort FALSE Suricata`
-	[ -z $IDS_ENGINE ] && exit 
+	[ -z $IDS_ENGINE ] && exit
         [ $DEBUG -eq 1 ] && echo "DEBUG: User selected $IDS_ENGINE."
 
 	# Ask which IDS ruleset to use.
@@ -432,7 +433,7 @@ if [ $ADVANCED_SETUP -eq 1 ] && [ $SERVER -eq 1 ]; then
 		IDS_RULESET_ACTION="- Download Emerging Threats GPL ruleset.\n"
 		;;
 	ETPRO)
-		[ $DEBUG -eq 1 ] && echo "DEBUG: Selecting ETPRO ruleset." 
+		[ $DEBUG -eq 1 ] && echo "DEBUG: Selecting ETPRO ruleset."
 		TEXT="Please enter your Emerging Threats Pro oinkcode.\n\nIf you don't already have one, you can purchase one from http://www.emergingthreatspro.com/."
 		OINKCODE=`zenity --entry --title="Emerging Threats Pro Oinkcode" --text="$TEXT"`
 		[ $DEBUG -eq 1 ] && echo "DEBUG: Entered ETPRO oinkcode $OINKCODE"
@@ -469,18 +470,18 @@ fi
 # ADVANCED SETUP - SENSOR
 #########################################
 if [ $ADVANCED_SETUP -eq 1 ] && [ $SENSOR -eq 1 ]; then
-	
+
 	# Remove "-c" from PCAP_OPTIONS for better performance on production networks
 	PCAP_OPTIONS=""
 
-	# Ask for PF_RING_SLOTS        
+	# Ask for PF_RING_SLOTS
 	PF_RING_SLOTS_CONFIRMED="no"
 	while [ $PF_RING_SLOTS_CONFIRMED = "no" ]; do
 		PF_RING_SLOTS=`zenity --entry --title "$TITLE" --text="What would you like to set PF__RING min__num__slots to?\n\nThe default is 4096.  For busy networks, you may want to increase this to a higher number like 65534.\n\nIf you need to change this later, you can modify /etc/modprobe.d/pf__ring.conf and reload the pf_ring module." --entry-text=4096`
 		[ x$PF_RING_SLOTS = "x" ] && exit
 		COMPRESSED="$(echo $PF_RING_SLOTS | sed -e 's/[^[:digit:]]//g')"
 		if [ "$COMPRESSED" != "$PF_RING_SLOTS" ]; then
-			zenity --error --text "Invalid value! Please use integers only." 
+			zenity --error --text "Invalid value! Please use integers only."
 		else
 			PF_RING_SLOTS_CONFIRMED="yes"
 		fi
@@ -492,7 +493,7 @@ if [ $ADVANCED_SETUP -eq 1 ] && [ $SENSOR -eq 1 ]; then
 		INTERFACES=`cat "/proc/net/dev" | egrep "(eth|bond|wlan|br|ath|bge|mon|fe)[0-9]+" | awk '{print $1}' | cut -d\: -f1 | sort`
 		if grep "Security Onion" /etc/network/interfaces >/dev/null 2>&1 && grep manual /etc/network/interfaces >/dev/null 2>&1; then
 			CONFIGURED_INTERFACES=`awk '/manual/ {print $2}' /etc/network/interfaces`
-			INPUT=`for i in $INTERFACES; do 
+			INPUT=`for i in $INTERFACES; do
 					if echo $CONFIGURED_INTERFACES |grep $i >/dev/null 2>&1; then
 						echo -n "TRUE $i "
 					else
@@ -678,14 +679,14 @@ Would you like to enable full packet capture?"
 	# Ask for PCAP_SIZE
 	if [ "$PCAP_ENABLED" == "yes" ]; then
 
-		# Ask for PCAP_SIZE        
+		# Ask for PCAP_SIZE
 		PCAP_SIZE_CONFIRMED="no"
 		while [ $PCAP_SIZE_CONFIRMED = "no" ]; do
 			PCAP_SIZE=`zenity --entry --title "$TITLE" --text="How big do you want your pcap files to be?\n\nPlease enter an integer in Megabytes (MB).  The default is 150 MB." --entry-text=150`
 			[ x$PCAP_SIZE = "x" ] && exit
 			COMPRESSED="$(echo $PCAP_SIZE | sed -e 's/[^[:digit:]]//g')"
 			if [ "$COMPRESSED" != "$PCAP_SIZE" ]; then
-				zenity --error --text "Invalid MB Value! Please use integers only." 
+				zenity --error --text "Invalid MB Value! Please use integers only."
 			else
 				PCAP_SIZE_CONFIRMED="yes"
 			fi
@@ -708,14 +709,14 @@ Would you like to enable mmap I/O?"
 			PCAP_OPTIONS="--mmap"
 		fi
 
-		# Ask for PCAP_RING_SIZE        
+		# Ask for PCAP_RING_SIZE
 		PCAP_RING_SIZE_CONFIRMED="no"
 		while  [ $PCAP_RING_SIZE_CONFIRMED = "no" ]; do
 			PCAP_RING_SIZE=`zenity --entry --title "$TITLE" --text="How large do you want your PCAP ring buffer?\n\nEach monitoring interface will have the specified amount allocated from RAM\nso be sure your system has enough memory. In the case of 4 sensor interfaces\nand a specified ring buffer of 1GB, 4GB of total RAM will be allocated for packet\nbuffering. For busy networks a ring buffer of at least 256MB is recommended.\n\nPlease enter an integer in Megabytes (MB). The default is 64 MB." --entry-text=64`
 			[ x$PCAP_RING_SIZE = "x" ] && exit
 			COMPRESSED="$(echo $PCAP_RING_SIZE | sed -e 's/[^[:digit:]]//g')"
 			if [ "$COMPRESSED" != "$PCAP_RING_SIZE" ]; then
-				zenity --error --text "Invalid MB Value! Please use integers only." 
+				zenity --error --text "Invalid MB Value! Please use integers only."
 			else
 				PCAP_RING_SIZE_CONFIRMED="yes"
 			fi
@@ -728,16 +729,16 @@ Would you like to enable mmap I/O?"
 		CRIT_DISK_USAGE=`zenity --entry --title "$TITLE" --text="At what percent of disk usage would you like to begin purging old logs?\n\nPlease enter an integer between 10 and 100.  The default is 90." --entry-text=90`
 		[ x$CRIT_DISK_USAGE = "x" ] && exit
 		COMPRESSED="$(echo $CRIT_DISK_USAGE | sed -e 's/[^[:digit:]]//g')"
-		[ "$COMPRESSED" == "$CRIT_DISK_USAGE" ] && 
-		[ $CRIT_DISK_USAGE -gt 10 ] && 
-		[ $CRIT_DISK_USAGE -lt 100 ] && 
-		CRIT_DISK_USAGE_CONFIRMED="yes" || 
-		zenity --error --text "Invalid percentage! Please use integers between 0 and 100." 
+		[ "$COMPRESSED" == "$CRIT_DISK_USAGE" ] &&
+		[ $CRIT_DISK_USAGE -gt 10 ] &&
+		[ $CRIT_DISK_USAGE -lt 100 ] &&
+		CRIT_DISK_USAGE_CONFIRMED="yes" ||
+		zenity --error --text "Invalid percentage! Please use integers between 0 and 100."
 	done
 	let WARN_DISK_USAGE=${CRIT_DISK_USAGE}-10
 
 	# End of ADVANCED SETUP - SENSOR
-fi 
+fi
 
 #########################################
 # Ask whether or not to use SALT
@@ -817,11 +818,11 @@ if [ "$ELSA" = "YES" ]; then
 			LOG_SIZE_LIMIT_GB=`zenity --entry --title "$TITLE" --text="How much disk space (in GigaBytes) should be allocated for ELSA to store logs?\n\nPlease enter an integer greater than 0.  The default is half your disk size.\n\nPlease make sure that the value you set here is less than the size of your disk!\n\nIf you need to adjust this later, you can modify log__size__limit in the /etc/elsa__node.conf file." --entry-text=$LOG_SIZE_LIMIT_GB`
 			[ x$LOG_SIZE_LIMIT_GB = "x" ] && exit
 			COMPRESSED="$(echo $LOG_SIZE_LIMIT_GB | sed -e 's/[^[:digit:]]//g')"
-			[ "$COMPRESSED" == "$LOG_SIZE_LIMIT_GB" ] && 
-			[ $LOG_SIZE_LIMIT_GB -gt 0 ] && 
-			[ $LOG_SIZE_LIMIT_GB -lt $DISK_SIZE_GB ] && 
-			LOG_SIZE_LIMIT_CONFIRMED="yes" || 
-			zenity --error --text "Invalid log size limit! Please use integers greater than 0 and less than your disk size." 
+			[ "$COMPRESSED" == "$LOG_SIZE_LIMIT_GB" ] &&
+			[ $LOG_SIZE_LIMIT_GB -gt 0 ] &&
+			[ $LOG_SIZE_LIMIT_GB -lt $DISK_SIZE_GB ] &&
+			LOG_SIZE_LIMIT_CONFIRMED="yes" ||
+			zenity --error --text "Invalid log size limit! Please use integers greater than 0 and less than your disk size."
 		done
 		let LOG_SIZE_LIMIT=LOG_SIZE_LIMIT_GB*1000000000
 	fi
@@ -916,7 +917,7 @@ echo "Etc/UTC" > /etc/timezone
 dpkg-reconfigure --frontend noninteractive tzdata >> $LOG 2>&1
 date >> $LOG 2>&1
 
-if pgrep rsyslog>/dev/null; then 
+if pgrep rsyslog>/dev/null; then
 	echo "4"
 	echo "# Please wait while restarting rsyslog..." | tee -a $LOG
 	service rsyslog restart >> $LOG 2>&1
@@ -967,7 +968,7 @@ mkdir -p /etc/mysql/conf.d/
 # (especially if you are sending prads session data into the sancp table)
 # so increase open_files_limit on master server
 if [ $SERVER -eq 1 ]; then
-	cat << EOF > /etc/mysql/conf.d/securityonion-sguild.cnf	
+	cat << EOF > /etc/mysql/conf.d/securityonion-sguild.cnf
 [mysqld]
 open_files_limit = 90000
 EOF
@@ -975,7 +976,7 @@ fi
 
 # https://code.google.com/p/security-onion/issues/detail?id=388
 # http://stackoverflow.com/questions/3456159/how-to-shrink-purge-ibdata1-file-in-mysql
-cat << EOF > /etc/mysql/conf.d/securityonion-ibdata1.cnf	
+cat << EOF > /etc/mysql/conf.d/securityonion-ibdata1.cnf
 [mysqld]
 innodb_file_per_table
 EOF
@@ -992,7 +993,7 @@ echo "options pf_ring transparent_mode=0 min_num_slots=$PF_RING_SLOTS" > /etc/mo
 #########################################
 # Firewall
 # When enabling ufw over SSH, it says it might disrupt the SSH
-# connection and asks for confirmation, so we put in the "allow 22" first, 
+# connection and asks for confirmation, so we put in the "allow 22" first,
 # then echo "y" into the "ufw enable", and hope for the best!
 #########################################
 # Open port 22 for remote administration
@@ -1025,7 +1026,7 @@ echo "# Please wait while creating the Sguil server..." | tee -a $LOG
 
 # MOVED TO /usr/sbin/nsm_server_add
 # Create /etc/sguild symlink - http://securityonion.blogspot.com/2011/11/security-onion-20111130-now-available.html
-#if [ ! -e /etc/sguild ]; then 
+#if [ ! -e /etc/sguild ]; then
 #	ln -f -s /etc/nsm/"$SGUIL_SERVER_NAME"/ /etc/sguild
 #fi
 # We keep all our rules in /etc/nsm/rules, so symlink all other rules locations to here
@@ -1074,12 +1075,12 @@ HOSTNAME=`hostname`
 if [ "$SERVERNAME" != "localhost" ]; then
 	SSH_DIR="/root/.ssh"
 	SSH_CONF="$SSH_DIR/securityonion_ssh.conf"
-	mkdir -p $SSH_DIR		
+	mkdir -p $SSH_DIR
 	KEY="$SSH_DIR/securityonion"
 	[ -f "$KEY" ] && mv $KEY $KEY.old
         ssh-keygen -f "$KEY" -N '' >> $LOG 2>&1
         chmod 600 "$KEY"*
-        xfce4-terminal -x ssh-copy-id -i "$KEY".pub $SSH_USERNAME@$SERVERNAME 
+        xfce4-terminal -x ssh-copy-id -i "$KEY".pub $SSH_USERNAME@$SERVERNAME
 	# Backup existing files
 	mkdir -p /etc/nsm/rules/backup/
 	cp /etc/nsm/rules/downloaded.rules /etc/nsm/rules/backup/downloaded.rules.`date +%Y%m%d%H%M%S` >> $LOG 2>&1
@@ -1101,14 +1102,14 @@ if [ "$SERVERNAME" != "localhost" ]; then
 	# but it resulted in a ^M at the end of IDS_ENGINE
 	scp -i "$KEY" $SSH_USERNAME@$SERVERNAME:/etc/nsm/securityonion.conf /tmp/securityonion.conf >> $LOG 2>&1
 	IDS_ENGINE=`grep ENGINE /tmp/securityonion.conf 2>/dev/null | cut -d\= -f2`
-	rm -f /tmp/securityonion.conf	
+	rm -f /tmp/securityonion.conf
 	# Save configuration
 	echo "SSH_USERNAME=$SSH_USERNAME" > $SSH_CONF
 	echo "SERVERNAME=$SERVERNAME" >> $SSH_CONF
 fi
 
 # NIDS sensor(s)
-for INTERFACE in $INTERFACES; do	
+for INTERFACE in $INTERFACES; do
 	SENSORNAME="$HOSTNAME-$INTERFACE"
 	echo "# Please wait while creating Sguil sensor: $SENSORNAME..." | tee -a $LOG
         [ $DEBUG -eq 1 ] && echo "DEBUG: Adding Sensor $INTERFACE."
@@ -1166,6 +1167,7 @@ for INTERFACE in $INTERFACES; do
 	echo "PCAP_OPTIONS=\"$PCAP_OPTIONS\"" 			>> /etc/nsm/"$SENSORNAME"/sensor.conf
 	echo "PCAP_SIZE=${PCAP_SIZE}MiB" 			>> /etc/nsm/"$SENSORNAME"/sensor.conf
 	echo "PCAP_RING_SIZE=${PCAP_RING_SIZE}MiB"		>> /etc/nsm/"$SENSORNAME"/sensor.conf
+	echo "PCAP_SNAP_LENGTH=${PCAP_SNAP_LENGTH}"		>> /etc/nsm/"$SENSORNAME"/sensor.conf
 	echo "IDS_LB_PROCS=$IDS_LB_PROCS" 			>> /etc/nsm/"$SENSORNAME"/sensor.conf
 	echo "PCAP_ENABLED=\"$PCAP_ENABLED\""			>> /etc/nsm/"$SENSORNAME"/sensor.conf
 	echo "PCAP_AGENT_ENABLED=\"$PCAP_AGENT_ENABLED\""	>> /etc/nsm/"$SENSORNAME"/sensor.conf
@@ -1230,7 +1232,7 @@ EOF
                         INTERFACE=`grep $SENSOR $SENSORTAB|awk '{print $4}'`
                         echo "* Configuring Bro to monitor $INTERFACE" >> $LOG 2>&1
                         cat << EOF >> /opt/bro/etc/node.cfg
-[$SENSOR]   
+[$SENSOR]
 type=worker
 host=$IP
 interface=$INTERFACE
@@ -1316,7 +1318,7 @@ if [ "$SERVERNAME" = "localhost" ]; then
 	# # THE FOLLOWING URL is for etpro downloads, note the tarball name change!
 	# # and the et oinkcode requirement!
 	# #rule_url=https://rules.emergingthreatspro.com/|etpro.rules.tar.gz|<et oinkcode>
-	# 
+	#
 	cp /etc/nsm/templates/pulledpork/pulledpork.conf.master $PP_CONF >> $LOG 2>&1
 
 	# Start with the assumption that Internet is down
@@ -1383,7 +1385,7 @@ SSH_DIR="/root/.ssh"
 SSH_CONF="$SSH_DIR/securityonion_ssh.conf"
 echo "70"
 if [ -f $SSH_CONF ]; then
-        # We are a SENSOR  
+        # We are a SENSOR
 	echo "# Please wait while killing existing SSH tunnel to MASTER..." | tee -a $LOG
 	pkill autossh
 else
@@ -1458,17 +1460,17 @@ echo "      - sensor" 	>> /opt/onionsalt/salt/top.sls
 echo ""			>> /opt/onionsalt/salt/top.sls
 EOF
 		fi
-	
+
 		# All boxes run salt-minion
 		# Configure minion
 		echo "master: $SERVERNAME" > /etc/salt/minion.d/onionsalt.conf
 		# If salt-minion is DISABLED, enable it
 		[ -f /etc/init/salt-minion.DISABLED ] && mv /etc/init/salt-minion.DISABLED /etc/init/salt-minion.conf
 		service salt-minion restart >> $LOG 2>&1
-	
+
 		# Takes a few seconds for the minion to check in
 		sleep 10s
-	
+
 		# salt-master needs to accept the key from salt-minion
 		if [ "$SERVERNAME" = "localhost" ]; then
 			salt-key -a $FQDN -y >> $LOG 2>&1
@@ -1552,7 +1554,7 @@ if [ $SERVER -ne 1 ] && [ "$ELSA" = "YES" ]; then
     # Since the securityonion service started before we the ELSA ports
     # were determined, we need to tear down the SSH tunnel and restart it.
     # Kill autossh with SIGINT
-    if pgrep autossh>/dev/null; then 
+    if pgrep autossh>/dev/null; then
         kill -SIGINT `pgrep autossh`
         # Restart the autossh tunnel
         /usr/bin/autossh -M 0 -f -q -N -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" -i "$KEY" -L 3306:127.0.0.1:3306 -R $ELSA_PORT:localhost:3154 $SSH_USERNAME@$SERVERNAME
