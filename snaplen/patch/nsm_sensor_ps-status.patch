@@ -1,0 +1,25 @@
+--- old/nsm_sensor_ps-status	2014-05-01 19:06:56.014349810 +0000
++++ new/nsm_sensor_ps-status	2014-05-01 19:22:14.445951436 +0000
+@@ -356,12 +356,13 @@
+ 	HTTP_AGENT_ENABLED="yes"
+ 	PCAP_SIZE="150MiB"
+ 	PCAP_RING_SIZE="64MiB"
++	PCAP_SNAP_LENGTH="65535"
+ 
+ 	# add parameters to $SENSOR_CONF if they don't already exist
+ 	grep PCAP_ENABLED $SENSOR_CONF >/dev/null 		|| echo "PCAP_ENABLED=\"yes\""		>> $SENSOR_CONF
+ 	grep PCAP_AGENT_ENABLED $SENSOR_CONF >/dev/null 	|| echo "PCAP_AGENT_ENABLED=\"yes\"" 	>> $SENSOR_CONF
+ 	grep SNORT_AGENT_ENABLED $SENSOR_CONF >/dev/null 	|| echo "SNORT_AGENT_ENABLED=\"yes\"" 	>> $SENSOR_CONF
+-	grep IDS_ENGINE_ENABLED $SENSOR_CONF >/dev/null	|| echo "IDS_ENGINE_ENABLED=\"yes\""	>> $SENSOR_CONF
++	grep IDS_ENGINE_ENABLED $SENSOR_CONF >/dev/null		|| echo "IDS_ENGINE_ENABLED=\"yes\""	>> $SENSOR_CONF
+ 	grep BARNYARD2_ENABLED $SENSOR_CONF >/dev/null		|| echo "BARNYARD2_ENABLED=\"yes\"" 	>> $SENSOR_CONF
+ 	grep PRADS_ENABLED $SENSOR_CONF >/dev/null 		|| echo "PRADS_ENABLED=\"yes\"" 	>> $SENSOR_CONF
+ 	grep SANCP_AGENT_ENABLED $SENSOR_CONF >/dev/null 	|| echo "SANCP_AGENT_ENABLED=\"yes\"" 	>> $SENSOR_CONF
+@@ -370,6 +371,7 @@
+ 	grep HTTP_AGENT_ENABLED $SENSOR_CONF >/dev/null 	|| echo "HTTP_AGENT_ENABLED=\"yes\"" 	>> $SENSOR_CONF
+ 	grep PCAP_SIZE $SENSOR_CONF >/dev/null			|| echo "PCAP_SIZE=\"150MiB\""		>> $SENSOR_CONF
+ 	grep PCAP_RING_SIZE $SENSOR_CONF >/dev/null		|| echo "PCAP_RING_SIZE=\"64MiB\""	>> $SENSOR_CONF
++	grep PCAP_SNAP_LENGTH $SENSOR_CONF >/dev/null		|| echo "PCAP_SNAP_LENGTH=\"65535\""	>> $SENSOR_CONF
+ 
+         # load in sensor specific details (we need $IDS_LB_PROCS)
+         . $SENSOR_CONF
