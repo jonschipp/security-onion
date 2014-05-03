@@ -1,5 +1,5 @@
 --- old/sosetup	2014-05-01 19:06:37.534197117 +0000
-+++ new/sosetup	2014-05-01 19:11:09.724447208 +0000
++++ new/sosetup	2014-05-03 00:52:23.971744873 +0000
 @@ -104,6 +104,7 @@
  # PCAP_RING_SIZE is the RX_RING size for buffering packets
  # Default is 64MB
@@ -12,7 +12,7 @@
  	echo "PCAP_OPTIONS=\"$PCAP_OPTIONS\"" 			>> /etc/nsm/"$SENSORNAME"/sensor.conf
  	echo "PCAP_SIZE=${PCAP_SIZE}MiB" 			>> /etc/nsm/"$SENSORNAME"/sensor.conf
  	echo "PCAP_RING_SIZE=${PCAP_RING_SIZE}MiB"		>> /etc/nsm/"$SENSORNAME"/sensor.conf
-+	echo "PCAP_SNAP_LENGTH=${PCAP_SNAP_LENGTH}MiB"		>> /etc/nsm/"$SENSORNAME"/sensor.conf
++	echo "PCAP_SNAP_LENGTH=${PCAP_SNAP_LENGTH}"		>> /etc/nsm/"$SENSORNAME"/sensor.conf
  	echo "IDS_LB_PROCS=$IDS_LB_PROCS" 			>> /etc/nsm/"$SENSORNAME"/sensor.conf
  	echo "PCAP_ENABLED=\"$PCAP_ENABLED\""			>> /etc/nsm/"$SENSORNAME"/sensor.conf
  	echo "PCAP_AGENT_ENABLED=\"$PCAP_AGENT_ENABLED\""	>> /etc/nsm/"$SENSORNAME"/sensor.conf
