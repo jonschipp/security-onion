@@ -395,15 +395,11 @@ do
 		chown $SENSOR_USER:$SENSOR_GROUP $SENSOR_LOG_DIR/dailylogs/$TODAY
 		chmod 775 $SENSOR_LOG_DIR/dailylogs/$TODAY
 	fi
-	# Did the user supply a BPF?
-        if [ -s /etc/nsm/$SENSOR/bpf-pcap.conf ]; then
-                # User supplied a BPF, so we need to convert it
-                BPF=`grep -v "^#" /etc/nsm/$SENSOR/bpf-pcap.conf`
-                tcpdump -i $SENSOR_INTERFACE_SHORT -dd $BPF -s $PCAP_SNAP_LENGTH > /etc/nsm/$SENSOR/bpf-pcap.ops 2>/dev/null
-                BPF_OPTION="--filter /etc/nsm/$SENSOR/bpf-pcap.ops"
-        else
-                BPF_OPTION=""
-        fi
+	# Convert BPF
+        BPF=`grep -v "^#" /etc/nsm/$SENSOR/bpf-pcap.conf`
+        tcpdump -i $SENSOR_INTERFACE_SHORT -dd $BPF -s $PCAP_SNAP_LENGTH > /etc/nsm/$SENSOR/bpf-pcap.ops 2>/dev/null
+        BPF_OPTION="--filter /etc/nsm/$SENSOR/bpf-pcap.ops"
+        
 	if [ "$PCAP_ENABLED" == "yes" ] && [ -z "$SKIP_PCAP" ]; then
 		process_start "netsniff-ng" "-i $SENSOR_INTERFACE_SHORT -o $SENSOR_LOG_DIR/dailylogs/$TODAY/ --user `id -u $SENSOR_USER` --group `id -g $SENSOR_GROUP` -s --prefix snort.log. --verbose --ring-size $PCAP_RING_SIZE --interval $PCAP_SIZE $PCAP_OPTIONS $BPF_OPTION" "$PROCESS_PID_DIR/$SENSOR/netsniff-ng.pid" "$PROCESS_LOG_DIR/$SENSOR/netsniff-ng.log" "netsniff-ng (full packet data)"
 
